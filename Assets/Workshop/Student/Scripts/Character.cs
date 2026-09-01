@@ -6,16 +6,56 @@ using UnityEngine.UIElements;
 using static UnityEditor.PlayerSettings;
 using static UnityEngine.EventSystems.EventTrigger;
 
-public class Character : MonoBehaviour
+public class Character : Identity
 {
     public int energy;
     public int attackPoint;
     protected bool isFreeze;
-    OOPMapGenerator mapGenerator;
+    
 
     public virtual void Move(Vector2 direction)
     {
+        int toX = (int)(positionX + direction.x);
+        int toY = (int)(positionY + direction.y);
 
+        if (HasPlacement(toX, toY))
+        {
+            if (IsPotion(toX, toY))
+            {
+                mapGenerator.mapdata[positionX, positionY] = mapGenerator.empty;
+                mapGenerator.potions[toX, toY].Hit();
+                positionX = toX;
+                positionY = toY;
+                transform.position = new Vector2(positionX, positionY);
+                mapGenerator.mapdata[positionX, positionY] = mapGenerator.playerOnMap;
+            }
+            else if (IsDemonWalls(toX, toY))
+            {
+                mapGenerator.walls[toX, toY].Hit();
+            }
+            else if (IsExit(toX, toY))
+            {
+                mapGenerator.mapdata[positionX, positionY] = mapGenerator.empty;
+                positionX = toX;
+                positionY = toY;
+                transform.position = new Vector2(positionX, positionY);
+                mapGenerator.mapdata[positionX, positionY] = mapGenerator.playerOnMap;
+
+                if (mapGenerator.Exit != null)
+                {
+                    mapGenerator.Exit.ReachExit();
+                }
+            }
+        }
+        else
+        {
+            mapGenerator.mapdata [positionX, positionY] = mapGenerator.empty;
+            positionX = toX;
+            positionY = toY;
+            transform.position = new Vector2(positionX, positionY);
+            mapGenerator.mapdata[positionX, positionY] = mapGenerator.playerOnMap;
+        }
+        
     }
 
     public virtual void TakeDamage(int Damage)
@@ -69,6 +109,11 @@ public class Character : MonoBehaviour
     /// <returns></returns>
     public bool HasPlacement(int x, int y)
     {
+        if (mapGenerator != null)
+        {
+            string mapData = mapGenerator.GetMapData(x, y);
+            return mapData != mapGenerator.empty;
+        }
         // int mapData = mapGenerator.GetMapData(x, y);
         // return mapData != mapGenerator.empty;
         return false;
@@ -76,6 +121,11 @@ public class Character : MonoBehaviour
 
     public bool IsDemonWalls(int x, int y)
     {
+        if (mapGenerator != null)
+        {
+            string mapData = mapGenerator.GetMapData(x, y);
+            return mapData == mapGenerator.demonWall;
+        }
         // int mapData = mapGenerator.GetMapData(x, y);
         // return mapData == mapGenerator.demonWall;
         return false;
@@ -83,6 +133,11 @@ public class Character : MonoBehaviour
 
     public bool IsPotion(int x, int y)
     {
+        if (mapGenerator != null)
+        {
+            string mapData = mapGenerator.GetMapData(x, y);
+            return mapData == mapGenerator.potion;
+        }
         // int mapData = mapGenerator.GetMapData(x, y);
         // return mapData == mapGenerator.potion;
         return false;
@@ -90,6 +145,11 @@ public class Character : MonoBehaviour
 
     public bool IsExit(int x, int y)
     {
+        if (mapGenerator != null)
+        {
+            string mapData = mapGenerator.GetMapData(x, y);
+            return mapData == mapGenerator.exit;
+        }
         // int mapData = mapGenerator.GetMapData(x, y);
         // return mapData == mapGenerator.exit;
         return false;
