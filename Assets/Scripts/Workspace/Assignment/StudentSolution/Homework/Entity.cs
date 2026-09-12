@@ -6,18 +6,22 @@ namespace Assignment.StudentSolution
     {
         public string name;
         private Vector3 position;
-        protected int health;
+        protected int health = 100;
 
         public virtual void Update()
         {
+            position += Vector3.zero;
         }
 
-        protected virtual void TakeDamage(int damage)
+        protected virtual void TakeDamage()
         {
+            health -= 10;
+            Debug.Log($"{name} took damage. Current health: {health}");
         }
 
-        private void Move(Vector3 direction)
+        private void Move()
         {
+            position += Vector3.forward;
         }
     }
 }
